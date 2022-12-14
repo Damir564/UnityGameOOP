@@ -6,6 +6,12 @@ using UnityEngine.EventSystems;
 
 public class BE2_ExecutionManager : MonoBehaviour
 {
+    // GameObject робота чтобы ему устанавливать позицию и проверять дошёл он или нет
+    [SerializeField]
+    private GameObject _robot;
+
+    private bool _isBeginFromStart;
+
     List<I_BE2_TargetObject> _targetObjectsList;
     List<I_BE2_ProgrammingEnv> _programmingEnvsList;
     // v2.1 - blocksStack array of the ExecutionManager made public
@@ -17,6 +23,7 @@ public class BE2_ExecutionManager : MonoBehaviour
     {
         UpdateTargetObjects();
         UpdateProgrammingEnvsList();
+        _isBeginFromStart = true;
         instance = this;
     }
 
@@ -37,18 +44,30 @@ public class BE2_ExecutionManager : MonoBehaviour
         {
             blocksStacksArray[i].Execute();
         }
+        _isBeginFromStart = !_robot.GetComponent<PlayerOpen>().GetIsEnteredEndTrigger();
     }
 
     public void Play()
     {
+        if (_isBeginFromStart)
+        {
+            _robot.GetComponent<PlayerOpen>().StartPosition();
+        }
         BE2_MainEventsManager.Instance.TriggerEvent(BE2EventTypes.OnPlay);
         EventSystem.current.SetSelectedGameObject(null);
+        if (!_isBeginFromStart)
+        {
+            Debug.Log("Finished!!! Press \"Stop\" to start again");
+        }
+        // _robot.GetComponent<PlayerOpen>().StartPosition();
+
     }
 
     public void Stop()
     {
         BE2_MainEventsManager.Instance.TriggerEvent(BE2EventTypes.OnStop);
         EventSystem.current.SetSelectedGameObject(null);
+        _robot.GetComponent<PlayerOpen>().StartPosition();
     }
 
     // v2.3 - method UpdateBlocksStackList from the Execution Manager made public
